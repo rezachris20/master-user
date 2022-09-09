@@ -1,0 +1,45 @@
+version: "3.7"
+services:
+  user:
+    container_name: service-user-container
+    environment:
+      - APP_PORT=${APP_PORT}
+      - DB_HOST_POSTGRES=${DB_HOST_POSTGRES}
+      - DB_USER_POSTGRES=${DB_USER_POSTGRES}
+      - DB_PASSWORD_POSTGRES=${DB_PASSWORD_POSTGRES}
+      - DB_PORT_POSTGRES=${DB_PORT_POSTGRES}
+      - DB_NAME_POSTGRES=${DB_NAME_POSTGRES}
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    tty: true
+    build:
+      context: .
+    image: service-user-image
+    depends_on:
+      - postgresdb
+    networks:
+      - service-user
+    restart: on-failure
+
+  postgresdb:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: ${DB_USER_POSTGRES}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_POSTGRES}
+      POSTGRES_DB: ${DB_NAME_POSTGRES}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - service-user
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  service-user:
+    driver: bridge
